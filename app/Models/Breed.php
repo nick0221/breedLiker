@@ -12,8 +12,6 @@ class Breed extends Model
 {
     use Sushi;
 
-    protected static $rows = [];
-    protected $connection = null;
     protected $fillable = [
         'breedname',
         'imageUrl',
@@ -21,8 +19,6 @@ class Breed extends Model
         'user_id',
         'image'
     ];
-
-    // Use the Sushi array source
 
     public static function getFilterOptions()
     {
@@ -39,62 +35,32 @@ class Breed extends Model
         return $breedName;
     }
 
-    // Method to fetch images based on a breed
-    public static function getRows($breed = 'labrador'): array
-    {
-        // Fetch images from the API based on the selected breed
-        $url = "https://dog.ceo/api/breed/{$breed}/images/random/6";
-        $response = Http::get($url);
 
-        // Return an empty array if the request fails
+    public static function getRows(): array
+    {
+
+        $breed = request('tableFilters')['name']['value'] ?? 'labrador'; // Get breed from filter or default to 'labrador'
+
+        // Fetch data from the API
+        $apiUrl = "https://dog.ceo/api/breed/{$breed}/images/random/6";
+        $response = Http::get($apiUrl);
+
         if (!$response->successful()) {
             return [];
         }
 
-        $breeds = $response->json();
-        $img = [];
-
-        // Ensure 'message' exists in the response and process images
-        if (isset($breeds['message'])) {
-            foreach ($breeds['message'] as $imageUrl) {
-                $img[] = [
-                    'image' => $imageUrl,
-                    'name' => ucfirst($breed), // Capitalized breed name
-                ];
-            }
+        $data = $response->json()['message'] ?? [];
+        if (!is_array($data)) {
+            return [];
         }
 
-        return $img;
+        return array_map(fn($imageUrl) => [
+            'image' => $imageUrl,
+            'name' => ucfirst($breed),
+        ], $data);
+
     }
 
-    public static function setRows(array $rows): void
-    {
-        static::$rows = $rows;
-    }
-//
-//    public static function fetchImages($breed = null): array
-//    {
-//        $url = "https://dog.ceo/api/breed/$breed/images/random/6";
-//        $response = Http::get($url);
-//
-//        if (!$response->successful()) {
-//            return [];
-//        }
-//
-//        $breeds = $response->json();
-//        $img = [];
-//
-//        if (isset($breeds['message'])) {
-//            foreach ($breeds['message'] as $imageUrl) {
-//                $img[] = [
-//                    'image' => $imageUrl,
-//                    'name' => ucfirst($breed), // Capitalize breed name
-//                ];
-//            }
-//        }
-//
-//        return $img;
-//    }
 
     public function likeDog($dogBreed)
     {
@@ -158,9 +124,8 @@ class Breed extends Model
             ->exists();
     }
 
-    // Default rows loaded by Sushi
 
-    public function likedUSers($dogBreed)
+    public function likedUsers($dogBreed)
     {
         $users = User::whereHas('dogPreferences', function ($query) use ($dogBreed) {
             $query->where('breed', $dogBreed->name)
@@ -197,8 +162,6 @@ class Breed extends Model
         return $allUsers->join(', ', ' and ').' liked this.';
 
     }
-
-    // Method to fetch images from the API
 
     /**
      * Get the list of users who have a matching breed and image in their preferences.

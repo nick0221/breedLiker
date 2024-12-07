@@ -8,6 +8,8 @@ use Filament\Resources\Pages\ManageRecords;
 class ManageBreeds extends ManageRecords
 {
     protected static string $resource = BreedResource::class;
+    protected $listeners = ['refreshTable' => 'refreshTableData'];
+
 
     protected function getHeaderActions(): array
     {
@@ -15,6 +17,6 @@ class ManageBreeds extends ManageRecords
 
         ];
     }
-     
+
 
 }

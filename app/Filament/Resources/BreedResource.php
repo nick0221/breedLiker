@@ -10,14 +10,17 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+
 
 class BreedResource extends Resource
 {
     protected static ?string $model = Breed::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
+
 
     public static function form(Form $form): Form
     {
@@ -66,28 +69,19 @@ class BreedResource extends Resource
                 'xl' => 3,
             ])
             ->filters([
-                SelectFilter::make('breed')
+                SelectFilter::make('name')
                     ->label('Breed')
                     ->options($transformedData)
-                    ->query(function ($query, $data) {
-
-                        // Get the selected breed from the filter
+                    ->query(function (Builder $query, array $data) {
                         $selectedBreed = $data['value'] ?? 'labrador';
 
-                        // Fetch the rows for the selected breed using Sushi
-                        $rows = Breed::getRows($selectedBreed);
+                        $breed = new Breed();  // Fetch rows based on the selected breed
+                        $row = $breed->getRows();
 
-                        // Filter the rows manually if needed (just for filtering purposes)
-                        $filteredRows = collect($rows); // Convert array to collection
+                        logger('Filtered rows:', $row);
+                        //logger('Selected breed and updated rows:', [$selectedBreed, $breedInstance->rows]);
 
-                        // Apply the filter condition
-                        if ($selectedBreed) {
-                            $filteredRows = $filteredRows->where('name', ucfirst($selectedBreed));
-                        }
-
-                        // Return the filtered rows directly as a collection (not a query builder)
-                        return $filteredRows; // Return the filtered collection
-                    }),
+                    })
 
             ])
             ->actions([
