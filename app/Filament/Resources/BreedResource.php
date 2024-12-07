@@ -8,6 +8,7 @@ use App\Models\Breed;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -76,14 +77,20 @@ class BreedResource extends Resource
                         $selectedBreed = $data['value'] ?? 'labrador';
 
                         $breed = new Breed();  // Fetch rows based on the selected breed
-                        $row = $breed->getRows();
+                        $rows = $breed->getRows();
 
-                        logger('Filtered rows:', $row);
+
+                        logger('Filtered rows:',);
                         //logger('Selected breed and updated rows:', [$selectedBreed, $breedInstance->rows]);
 
                     })
 
             ])
+            ->filtersTriggerAction(
+                fn(Action $action) => $action
+                    ->button()
+                    ->label('Filter'),
+            )
             ->actions([
                 Tables\Actions\Action::make('Like')
                     ->action(fn(Breed $dogBreed) => $dogBreed->likeDog($dogBreed))

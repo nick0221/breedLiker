@@ -42,7 +42,7 @@ class Breed extends Model
         $breed = request('tableFilters')['name']['value'] ?? 'labrador'; // Get breed from filter or default to 'labrador'
 
         // Fetch data from the API
-        $apiUrl = "https://dog.ceo/api/breed/{$breed}/images/random/6";
+        $apiUrl = "https://dog.ceo/api/breed/{$breed}/images/random/3";
         $response = Http::get($apiUrl);
 
         if (!$response->successful()) {
